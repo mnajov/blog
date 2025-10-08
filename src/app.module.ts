@@ -8,16 +8,27 @@ import { AuthModule } from './modules/auth/auth.module';
 import { BolgModule } from './modules/bolg/bolg.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { url } from 'inspector';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({isGlobal:true}),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
     }),
-    MongooseModule.forRoot('mongodb+srv://allayar2:kJY17o9W9l0bBvvp@nestjsblog.8kkdju2.mongodb.net/?retryWrites=true&w=majority&appName=nestjsBlog'),
+    MongooseModule.forRootAsync({
+      imports:[ConfigModule],
+      useFactory: async (configService:ConfigService)=>({uri:configService.get<string>('DB-URL')}),
+      inject:[ConfigService]
+      
+    }),
+
+
+
     UserModule,
     AuthModule,
-    BolgModule,
+    BolgModule
   ],
   controllers: [AppController],
   providers: [AppService],
