@@ -10,6 +10,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { url } from 'inspector';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -23,15 +25,18 @@ import { url } from 'inspector';
       inject:[ConfigService]
       
     }),
-
-
+    ThrottlerModule.forRoot({
+      throttlers:[{ttl:10000, limit:3
+      }]}),
 
     UserModule,
     AuthModule,
     BolgModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {provide:APP_GUARD, useClass:ThrottlerGuard}
+  ],
 })
 export class AppModule {}
 
